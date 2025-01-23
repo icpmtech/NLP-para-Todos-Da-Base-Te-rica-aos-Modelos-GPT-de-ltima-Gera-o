@@ -1,0 +1,2308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NovaSearch Dashboard</title>
+
+  <!-- Bootstrap CSS -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+
+  <!-- Bootstrap Icons -->
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css"
+    rel="stylesheet"
+  />
+
+  <!-- Font Awesome (Optional) -->
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    rel="stylesheet"
+  />
+
+  <!-- Custom Font -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Intro.js CSS for Guided Tour -->
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/intro.js/4.2.2/introjs.min.css"
+    rel="stylesheet"
+  />
+
+  <style>
+    /* 
+     * Light Mode Defaults – Finance-Oriented Colors
+     * Tailored for a modern, professional fintech/finance feel.
+     */
+    :root {
+      --bs-body-bg: #f3f4f6;             /* Light gray for background */
+      --bs-body-color: #1f2937;          /* Darker text color */
+      --hero-gradient-start: #1e3a8a;    /* Deep navy-blue */
+      --hero-gradient-end: #3b82f6;      /* Bright finance-blue accent */
+      --link-hover-bg: #eff6ff;         /* Soft tinted hover background */
+      --card-hover-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+      --brand-primary: #3b82f6;         /* Primary brand color (blue) */
+    }
+
+    /* Global Styles */
+    body {
+      font-family: "Poppins", sans-serif;
+      background-color: var(--bs-body-bg);
+      color: var(--bs-body-color);
+      transition: background-color 0.3s, color 0.3s;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Dark Mode Styles */
+    body.dark-mode {
+      --bs-body-bg: #111827;             /* Very dark gray/blue background */
+      --bs-body-color: #f9fafb;          /* Lighter text color */
+      --bs-card-bg: #1f2937;             /* Dark card background */
+      --bs-card-border-color: #374151;   /* Dark border color */
+      --bs-primary: #60a5fa;             /* Slightly lighter finance-blue */
+      --bs-secondary: #03dac6;
+      --bs-success: #10b981;
+      --bs-danger: #ef4444;
+      --bs-warning: #f59e0b;
+      --bs-info: #2563eb;
+      --bs-light: #374151;
+      --bs-dark: #1f2937;
+      --bs-navbar-bg: #1f2937;
+      --bs-offcanvas-bg: #1f2937;
+      --bs-form-control-bg: #2d3643;
+      --bs-form-control-color: #f9fafb;
+      --bs-btn-outline-secondary-color: #f9fafb;
+      --bs-btn-outline-secondary-border-color: #f9fafb;
+      --bs-offcanvas-header-bg: #2d3643;
+      --bs-offcanvas-title-color: #f9fafb;
+      --hero-gradient-start: #1e40af;     /* Darker navy for hero gradient */
+      --hero-gradient-end: #2563eb;       /* Bright blue accent */
+      --link-hover-bg: #2d3643;
+      --card-hover-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+      --brand-primary: #60a5fa;
+    }
+
+    /* Hero Section (formerly Header) */
+    .hero-section {
+      background: linear-gradient(
+        135deg,
+        var(--hero-gradient-start) 0%,
+        var(--hero-gradient-end) 100%
+      );
+      color: #fff;
+      padding: 40px 20px;
+      border-radius: 15px;
+      margin-bottom: 40px;
+      text-align: center;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: background 0.3s;
+    }
+    .hero-section h1 {
+      margin: 0;
+      font-size: 3rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .hero-section h1 i {
+      margin-right: 15px;
+      font-size: 3rem;
+      animation: pulse 2s infinite;
+    }
+    .hero-section p {
+      margin-top: 15px;
+      font-size: 1.15rem;
+      color: #e0e0e0;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.1);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    /* Sidebar Styles */
+    #sidebar {
+      min-width: 250px;
+      max-width: 250px;
+      background-color: var(--bs-navbar-bg, #ffffff);
+      color: var(--bs-body-color);
+      transition: all 0.3s;
+      position: fixed;
+      top: 0;
+      left: -250px;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 1040;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    }
+    #sidebar.active {
+      left: 0;
+    }
+    #sidebar .sidebar-header {
+      padding: 20px;
+      background: var(--bs-offcanvas-header-bg, #f8f9fa);
+      text-align: center;
+      border-bottom: 1px solid #ddd;
+    }
+    #sidebar .sidebar-header h3 {
+      margin: 0;
+      font-size: 1.6rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--brand-primary);
+    }
+    #sidebar ul.components {
+      padding: 20px 0;
+      list-style: none;
+      margin: 0;
+    }
+    #sidebar ul li a {
+      padding: 12px 24px;
+      font-size: 1.05em;
+      display: block;
+      color: var(--bs-body-color);
+      transition: all 0.3s;
+      border-left: 4px solid transparent;
+    }
+    #sidebar ul li a i {
+      margin-right: 10px;
+    }
+    #sidebar ul li a:hover {
+      background: var(--link-hover-bg);
+      color: #fff;
+      border-left: 4px solid #fff;
+    }
+    #sidebar ul li.active > a,
+    a[aria-expanded="true"] {
+      background: var(--brand-primary);
+      color: #fff;
+      border-left: 4px solid #fff;
+    }
+
+    /* Content Styles */
+    #content {
+      transition: margin-left 0.3s;
+      padding: 20px;
+      margin-left: 0;
+    }
+    #sidebar.active + #content {
+      margin-left: 250px;
+    }
+
+    /* Search Card Styles */
+    .search-card {
+      /* Sticky position so it remains at the top on scroll */
+      position: sticky;         /* <--- added to make it sticky */
+      top: 70px;                /* <--- adjust if your navbar is taller or shorter */
+      z-index: 999;            /* <--- ensures it's above other elements */
+      background-color: var(--bs-card-bg, #fff);
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+      margin-bottom: 40px;
+      transition: transform 0.2s, background-color 0.3s, box-shadow 0.3s;
+    }
+    .search-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--card-hover-shadow);
+    }
+    .search-card .input-group {
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    /* Navigation Tabs */
+    .nav-tabs .nav-link {
+      font-weight: 600;
+      color: #555;
+      transition: background-color 0.3s, color 0.3s;
+      border: none;
+      border-radius: 0;
+      margin-right: 2px;
+      margin-bottom: -1px;
+    }
+    .nav-tabs .nav-link.active {
+      color: #ffffff;
+      background-color: var(--brand-primary, #0d6efd);
+      border-bottom: 2px solid var(--brand-primary, #0d6efd);
+    }
+    .nav-tabs .nav-link:hover {
+      background-color: var(--brand-primary, #0d6efd);
+      color: #ffffff;
+    }
+
+    /* Logs Panel */
+    .logs-panel {
+      max-height: 300px;
+      overflow-y: auto;
+      background-color: var(--bs-card-bg, #fff);
+      color: var(--bs-body-color);
+      border-radius: 8px;
+      padding: 20px;
+      font-size: 0.95rem;
+      transition: max-height 0.3s ease, background-color 0.3s, color 0.3s;
+      border: 1px solid var(--bs-card-border-color, #ccc);
+    }
+    .logs-panel.hidden {
+      max-height: 0 !important;
+      padding: 0 20px;
+      border: none !important;
+    }
+    .logs-panel h5 {
+      margin-bottom: 15px;
+      border-bottom: 1px solid #444;
+      padding-bottom: 10px;
+      font-size: 1.2rem;
+    }
+    .logs-panel pre {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    /* Result Cards */
+    .result-card {
+      background-color: var(--bs-card-bg, #fff);
+      border: 1px solid var(--bs-card-border-color, #ccc);
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      padding: 25px;
+      margin-bottom: 25px;
+      transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s, border-color 0.3s;
+    }
+    .result-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+      border-color: var(--brand-primary);
+    }
+    .result-card h5 {
+      margin-bottom: 15px;
+      font-size: 1.25rem;
+      color: var(--brand-primary);
+      word-wrap: break-word;
+    }
+    .result-card p {
+      margin-bottom: 20px;
+      color: var(--bs-body-color);
+    }
+    .result-card a.btn {
+      margin-right: 10px;
+    }
+
+    /* Loading Spinner */
+    .spinner-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      display: none; /* Hidden by default */
+      transition: background 0.3s;
+    }
+    .spinner-overlay.dark-mode {
+      background: rgba(0, 0, 0, 0.6);
+    }
+    .spinner-border {
+      width: 4rem;
+      height: 4rem;
+    }
+
+    /* Aside Panel Styles */
+    .aside-panel .form-control {
+      margin-bottom: 15px;
+    }
+    .aside-panel .btn {
+      width: 100%;
+    }
+
+    /* Toast Styles */
+    .toast-container {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1055;
+    }
+    body.dark-mode .toast {
+      background-color: #333;
+      color: #e0e0e0;
+    }
+
+    /* Dark Mode Toggle (Floating FAB) */
+    .dark-mode-toggle {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      z-index: 1050;
+      padding: 0.5rem 0.75rem;
+      border-radius: 999px;
+      background: var(--bs-card-bg, #ffffff);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+    .dark-mode-toggle .form-check-label {
+      margin-left: 5px;
+      cursor: pointer;
+    }
+
+    /* Breadcrumb Styles */
+    .breadcrumb {
+      background-color: transparent;
+      padding-left: 0;
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+    }
+    .breadcrumb-item + .breadcrumb-item::before {
+      content: ">";
+    }
+    .breadcrumb-item a {
+      color: var(--bs-body-color);
+      text-decoration: none;
+    }
+    .breadcrumb-item a:hover {
+      text-decoration: underline;
+      color: var(--brand-primary);
+    }
+
+    /* Background Pattern */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url("https://www.transparenttextures.com/patterns/diagmonds.png")
+        repeat;
+      opacity: 0.05;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    /* Focus Indicators */
+    .btn:focus,
+    .form-control:focus,
+    .nav-link:focus {
+      outline: 2px dashed var(--brand-primary);
+      outline-offset: 2px;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+      #sidebar {
+        left: -250px;
+      }
+      #sidebar.active {
+        left: 0;
+      }
+      #sidebar + #content {
+        margin-left: 0;
+      }
+      #sidebar.active + #content {
+        margin-left: 250px;
+      }
+      .hero-section h1 {
+        font-size: 2.3rem;
+      }
+      .hero-section p {
+        font-size: 1rem;
+      }
+      .search-card {
+        padding: 20px;
+      }
+      .dark-mode-toggle {
+        bottom: 1rem;
+        right: 1rem;
+      }
+    }
+
+    /* Search History Panel Styles */
+    .history-panel .list-group-item {
+      background-color: var(--bs-card-bg, #fff);
+      color: var(--bs-body-color);
+      border: none;
+      border-bottom: 1px solid #444;
+    }
+    .history-panel .list-group-item:last-child {
+      border-bottom: none;
+    }
+    .history-panel .list-group-item button {
+      width: 100%;
+      text-align: left;
+      background: none;
+      border: none;
+      padding: 0;
+      color: var(--brand-primary);
+      font-weight: 500;
+    }
+    .history-panel .list-group-item button:hover {
+      text-decoration: underline;
+    }
+
+    /* Error Alert Styles */
+    .error-alert {
+      display: none;
+    }
+
+    /* Loading Spinner within Tabs */
+    .tab-spinner {
+      display: none;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar Navigation -->
+  <nav id="sidebar" aria-label="Sidebar Navigation">
+    <div class="sidebar-header">
+      <h3>
+        <i class="bi bi-lightning-charge-fill"></i> NovaSearch
+      </h3>
+    </div>
+    <ul class="list-unstyled components">
+      <li class="active">
+        <a href="#home" onclick="navigateTo('home')"
+          ><i class="bi bi-house-door"></i> Home</a
+        >
+      </li>
+      <li>
+        <a href="#services" onclick="navigateTo('services')"
+          ><i class="bi bi-stars"></i> Features</a
+        >
+      </li>
+      <li>
+        <a href="#analytics" onclick="navigateTo('analytics')"
+          ><i class="bi bi-bar-chart"></i> Analytics</a
+        >
+      </li>
+      <li>
+        <a href="#settings" onclick="navigateTo('settings')"
+          ><i class="bi bi-gear"></i> Settings</a
+        >
+      </li>
+      <li>
+        <a href="#help" onclick="navigateTo('help')"
+          ><i class="bi bi-question-circle"></i> Get Help</a
+        >
+      </li>
+      <li>
+        <a href="#toggleAnalytics" onclick="toggleAnalyticsVisibility()"
+          ><i class="bi bi-eye" id="toggleAnalyticsIcon"></i> Toggle Analytics
+          Panel</a
+        >
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Page Content -->
+  <div id="content">
+    <!-- Top Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+      <div class="container-fluid">
+        <button
+          type="button"
+          id="sidebarCollapse"
+          class="btn btn-primary"
+          aria-label="Toggle Sidebar"
+          onclick="document.getElementById('sidebar').classList.toggle('active');"
+        >
+          <i class="bi bi-list"></i>
+        </button>
+        <button
+          class="btn btn-outline-secondary ms-auto"
+          data-bs-toggle="modal"
+          data-bs-target="#userProfileModal"
+          aria-label="User Profile"
+        >
+          <i class="bi bi-person-circle"></i>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Breadcrumbs -->
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+          <a href="#" onclick="navigateTo('home')">Home</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+      </ol>
+    </nav>
+
+    <!-- Hero Section -->
+    <div
+      class="hero-section"
+      data-intro="Welcome to NovaSearch! Use this unified dashboard to explore various data sources in one place."
+      data-step="1"
+    >
+      <h1>
+        <i class="bi bi-speedometer2"></i> NovaSearch Dashboard
+      </h1>
+      <p>
+        Explore results from GPT-4, DeepSeek, Wikipedia, Internet Archive, Reddit, and YouTube seamlessly
+      </p>
+    </div>
+
+    <!-- Unified Search Input -->
+    <div
+      class="search-card"
+      data-intro="Type in your search topic here and click on the magnifying glass to see consolidated results below."
+      data-step="2"
+    >
+      <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+          <div class="input-group">
+            <input
+              type="text"
+              id="queryInput"
+              class="form-control"
+              placeholder="Search for a topic, video, or subreddit..."
+              aria-label="Search Query"
+            />
+            <button
+              class="btn btn-primary"
+              onclick="fetchAllServicesDebounced()"
+              aria-label="Search Button"
+            >
+              <i class="bi bi-search"></i>
+            </button>
+            <!-- API Keys Panel Trigger Button -->
+            <button
+              class="btn btn-outline-secondary"
+              type="button"
+              data-bs-toggle="offcanvas"
+              data-bs-target="#apiKeysPanel"
+              aria-controls="apiKeysPanel"
+              aria-label="Manage API Keys"
+              data-bs-toggle="tooltip"
+              data-bs-placement="bottom"
+              title="Manage your API keys securely."
+            >
+              <i class="bi bi-key"></i>
+            </button>
+            <!-- Search History Panel Trigger Button -->
+            <button
+              class="btn btn-outline-secondary"
+              type="button"
+              data-bs-toggle="offcanvas"
+              data-bs-target="#searchHistoryPanel"
+              aria-controls="searchHistoryPanel"
+              aria-label="Open Search History"
+              data-bs-toggle="tooltip"
+              data-bs-placement="bottom"
+              title="View your search history."
+            >
+              <i class="bi bi-clock-history"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Logs Toggle Button -->
+    <div class="row mb-3">
+      <div class="col-12 text-end">
+        <button
+          class="btn btn-outline-secondary"
+          onclick="toggleLogs()"
+          aria-label="Toggle Logs"
+          data-intro="Enable the logs panel to track system messages, debug output, and error reports in real time."
+          data-step="4"
+        >
+          <i class="bi bi-list"></i> System Logs
+        </button>
+      </div>
+    </div>
+
+    <!-- Logs Section -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div
+          class="logs-panel hidden"
+          id="logsPanel"
+          aria-live="polite"
+        >
+          <h5><i class="bi bi-terminal"></i> Activity Logs</h5>
+          <pre id="logs"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs Section -->
+    <div
+      class="row"
+      data-intro="Use these tabs to browse results across multiple sources in one place."
+      data-step="5"
+    >
+      <div class="col-12">
+        <ul class="nav nav-tabs mb-4" id="resultsTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button
+              class="nav-link active"
+              id="gpt-tab"
+              data-bs-toggle="tab"
+              data-bs-target="#gpt"
+              type="button"
+              role="tab"
+              aria-controls="gpt"
+              aria-selected="true"
+            >
+              <i class="bi bi-cpu"></i> GPT-4
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button
+              class="nav-link"
+              id="deepseek-tab"
+              data-bs-toggle="tab"
+              data-bs-target="#deepseek"
+              type="button"
+              role="tab"
+              aria-controls="deepseek"
+              aria-selected="false"
+            >
+              <i class="bi bi-lightbulb"></i> DeepSeek
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button
+              class="nav-link"
+              id="wiki-tab"
+              data-bs-toggle="tab"
+              data-bs-target="#wiki"
+              type="button"
+              role="tab"
+              aria-controls="wiki"
+              aria-selected="false"
+            >
+              <i class="bi bi-book"></i> Wikipedia
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button
+              class="nav-link"
+              id="internetArchive-tab"
+              data-bs-toggle="tab"
+              data-bs-target="#internetArchive"
+              type="button"
+              role="tab"
+              aria-controls="internetArchive"
+              aria-selected="false"
+            >
+              <i class="bi bi-inbox"></i> Internet Archive
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button
+              class="nav-link"
+              id="reddit-tab"
+              data-bs-toggle="tab"
+              data-bs-target="#reddit"
+              type="button"
+              role="tab"
+              aria-controls="reddit"
+              aria-selected="false"
+            >
+              <i class="bi bi-reddit"></i> Reddit
+            </button>
+          </li>
+          <!-- New YouTube Tab -->
+          <li class="nav-item" role="presentation">
+            <button
+              class="nav-link"
+              id="youtube-tab"
+              data-bs-toggle="tab"
+              data-bs-target="#youtube"
+              type="button"
+              role="tab"
+              aria-controls="youtube"
+              aria-selected="false"
+            >
+              <i class="bi bi-youtube"></i> YouTube
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button
+              class="nav-link"
+              id="analytics-tab"
+              data-bs-toggle="tab"
+              data-bs-target="#analytics"
+              type="button"
+              role="tab"
+              aria-controls="analytics"
+              aria-selected="false"
+            >
+              <i class="bi bi-bar-chart-line"></i> Insights
+            </button>
+          </li>
+        </ul>
+
+        <div class="tab-content">
+          <!-- GPT-4 Tab -->
+          <div
+            class="tab-pane fade show active"
+            id="gpt"
+            role="tabpanel"
+            aria-labelledby="gpt-tab"
+          >
+            <h5><i class="bi bi-cpu"></i> GPT-4 Response</h5>
+            <!-- Error Message -->
+            <div class="alert alert-danger error-alert" id="gptError"></div>
+            <!-- Loading Spinner -->
+            <div
+              class="d-flex justify-content-center tab-spinner"
+              id="gptSpinner"
+            >
+              <div
+                class="spinner-border text-primary"
+                role="status"
+                aria-label="GPT-4 Loading Spinner"
+              >
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+            <!-- Result Display -->
+            <div id="gptResult"></div>
+            <!-- Load More for GPT-4 -->
+            <div class="row mt-3">
+              <div class="col-12 text-center">
+                <button
+                  class="btn btn-outline-primary"
+                  id="loadMoreGPTBtn"
+                  onclick="loadMoreGPT()"
+                  style="display: none;"
+                  aria-label="Load More GPT Results"
+                >
+                  <i class="bi bi-plus-circle"></i> Load More GPT
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- DeepSeek Tab -->
+          <div
+            class="tab-pane fade"
+            id="deepseek"
+            role="tabpanel"
+            aria-labelledby="deepseek-tab"
+          >
+            <h5><i class="bi bi-lightbulb"></i> DeepSeek Insights</h5>
+            <!-- Error Message -->
+            <div
+              class="alert alert-danger error-alert"
+              id="deepSeekError"
+            ></div>
+            <!-- Loading Spinner -->
+            <div
+              class="d-flex justify-content-center tab-spinner"
+              id="deepSeekSpinner"
+            >
+              <div
+                class="spinner-border text-primary"
+                role="status"
+                aria-label="DeepSeek Loading Spinner"
+              >
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+            <!-- Result Display -->
+            <div id="deepSeekResult"></div>
+            <!-- Load More for DeepSeek -->
+            <div class="row mt-3">
+              <div class="col-12 text-center">
+                <button
+                  class="btn btn-outline-primary"
+                  id="loadMoreDeepSeekBtn"
+                  onclick="loadMoreDeepSeek()"
+                  style="display: none;"
+                  aria-label="Load More DeepSeek Results"
+                >
+                  <i class="bi bi-plus-circle"></i> Load More DeepSeek
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Wikipedia Tab -->
+          <div
+            class="tab-pane fade"
+            id="wiki"
+            role="tabpanel"
+            aria-labelledby="wiki-tab"
+          >
+            <h5><i class="bi bi-book"></i> Wikipedia Articles</h5>
+            <!-- Error Message -->
+            <div class="alert alert-danger error-alert" id="wikiError"></div>
+            <!-- Loading Spinner -->
+            <div
+              class="d-flex justify-content-center tab-spinner"
+              id="wikiSpinner"
+            >
+              <div
+                class="spinner-border text-primary"
+                role="status"
+                aria-label="Wikipedia Loading Spinner"
+              >
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+            <!-- Result Display -->
+            <div id="wikiResult"></div>
+            <!-- Load More for Wikipedia -->
+            <div class="row mt-3">
+              <div class="col-12 text-center">
+                <button
+                  class="btn btn-outline-primary"
+                  id="loadMoreWikiBtn"
+                  onclick="loadMoreWiki()"
+                  style="display: none;"
+                  aria-label="Load More Wikipedia Articles"
+                >
+                  <i class="bi bi-plus-circle"></i> Load More Wikipedia
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Internet Archive Tab -->
+          <div
+            class="tab-pane fade"
+            id="internetArchive"
+            role="tabpanel"
+            aria-labelledby="internetArchive-tab"
+          >
+            <h5><i class="bi bi-inbox"></i> Archive Findings</h5>
+            <!-- Error Message -->
+            <div
+              class="alert alert-danger error-alert"
+              id="internetArchiveError"
+            ></div>
+            <!-- Loading Spinner -->
+            <div
+              class="d-flex justify-content-center tab-spinner"
+              id="internetArchiveSpinner"
+            >
+              <div
+                class="spinner-border text-primary"
+                role="status"
+                aria-label="Internet Archive Loading Spinner"
+              >
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+            <!-- Result Display -->
+            <div id="internetArchiveResult"></div>
+            <!-- Load More for Internet Archive -->
+            <div class="row mt-3">
+              <div class="col-12 text-center">
+                <button
+                  class="btn btn-outline-primary"
+                  id="loadMoreIABtn"
+                  onclick="loadMoreInternetArchive()"
+                  style="display: none;"
+                  aria-label="Load More Internet Archive Results"
+                >
+                  <i class="bi bi-plus-circle"></i> Load More
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reddit Tab -->
+          <div
+            class="tab-pane fade"
+            id="reddit"
+            role="tabpanel"
+            aria-labelledby="reddit-tab"
+          >
+            <h5><i class="bi bi-reddit"></i> Reddit Browser</h5>
+            <!-- Error Message -->
+            <div
+              class="alert alert-danger error-alert"
+              id="redditError"
+            ></div>
+            <!-- Loading Spinner -->
+            <div
+              class="d-flex justify-content-center tab-spinner"
+              id="redditSpinner"
+            >
+              <div
+                class="spinner-border text-primary"
+                role="status"
+                aria-label="Reddit Loading Spinner"
+              >
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+            <!-- Result Display -->
+            <div id="redditResult"></div>
+            <!-- Load More for Reddit -->
+            <div class="row mt-3">
+              <div class="col-12 text-center">
+                <button
+                  class="btn btn-outline-primary"
+                  id="loadMoreRedditBtn"
+                  onclick="loadMoreReddit()"
+                  style="display: none;"
+                  aria-label="Load More Reddit Posts"
+                >
+                  <i class="bi bi-plus-circle"></i> Load More
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- New YouTube Tab -->
+          <div
+            class="tab-pane fade"
+            id="youtube"
+            role="tabpanel"
+            aria-labelledby="youtube-tab"
+          >
+            <h5><i class="bi bi-youtube"></i> YouTube Search</h5>
+            <!-- Error Message -->
+            <div class="alert alert-danger error-alert" id="youtubeError"></div>
+            <!-- Loading Spinner -->
+            <div
+              class="d-flex justify-content-center tab-spinner"
+              id="youtubeSpinner"
+            >
+              <div
+                class="spinner-border text-primary"
+                role="status"
+                aria-label="YouTube Loading Spinner"
+              >
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+            <!-- Result Display -->
+            <div id="youtubeResult"></div>
+            <!-- Load More for YouTube -->
+            <div class="row mt-3">
+              <div class="col-12 text-center">
+                <button
+                  class="btn btn-outline-primary"
+                  id="loadMoreYouTubeBtn"
+                  onclick="loadMoreYouTube()"
+                  style="display: none;"
+                  aria-label="Load More YouTube Videos"
+                >
+                  <i class="bi bi-plus-circle"></i> Load More
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Analytics Tab -->
+          <div
+            class="tab-pane fade"
+            id="analytics"
+            role="tabpanel"
+            aria-labelledby="analytics-tab"
+          >
+            <h5><i class="bi bi-bar-chart-line"></i> Search Insights</h5>
+            <!-- Error Message -->
+            <div
+              class="alert alert-danger error-alert"
+              id="analyticsError"
+            ></div>
+            <!-- Loading Spinner -->
+            <div
+              class="d-flex justify-content-center tab-spinner"
+              id="analyticsSpinner"
+            >
+              <div
+                class="spinner-border text-primary"
+                role="status"
+                aria-label="Analytics Loading Spinner"
+              >
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+            <!-- Chart Display -->
+            <canvas id="statsChart" width="400" height="200"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- API Keys Aside Panel -->
+      <div
+        class="offcanvas offcanvas-end"
+        tabindex="-1"
+        id="apiKeysPanel"
+        aria-labelledby="apiKeysPanelLabel"
+      >
+        <div class="offcanvas-header">
+          <h5 class="offcanvas-title" id="apiKeysPanelLabel">
+            <i class="bi bi-key"></i> Manage API Keys
+          </h5>
+          <button
+            type="button"
+            class="btn-close text-reset"
+            data-bs-dismiss="offcanvas"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="offcanvas-body aside-panel">
+          <form id="apiKeysForm">
+            <label for="openAIKey" class="form-label"
+              ><i class="bi bi-chat-dots"></i> OpenAI API Key</label
+            >
+            <div class="input-group">
+              <input
+                type="password"
+                id="openAIKey"
+                class="form-control"
+                placeholder="Enter OpenAI API Key"
+                aria-label="OpenAI API Key"
+              />
+              <button
+                class="btn btn-outline-secondary"
+                type="button"
+                onclick="togglePasswordVisibility('openAIKey')"
+                aria-label="Toggle OpenAI Key Visibility"
+              >
+                <i class="bi bi-eye-slash" id="openAIKeyToggleIcon"></i>
+              </button>
+            </div>
+
+            <label for="deepSeekKey" class="form-label mt-3"
+              ><i class="bi bi-lightbulb"></i> DeepSeek API Key</label
+            >
+            <div class="input-group">
+              <input
+                type="password"
+                id="deepSeekKey"
+                class="form-control"
+                placeholder="Enter DeepSeek API Key"
+                aria-label="DeepSeek API Key"
+              />
+              <button
+                class="btn btn-outline-secondary"
+                type="button"
+                onclick="togglePasswordVisibility('deepSeekKey')"
+                aria-label="Toggle DeepSeek Key Visibility"
+              >
+                <i class="bi bi-eye-slash" id="deepSeekKeyToggleIcon"></i>
+              </button>
+            </div>
+
+            <!-- YouTube API Key -->
+            <label for="youtubeKey" class="form-label mt-3"
+              ><i class="bi bi-youtube"></i> YouTube API Key</label
+            >
+            <div class="input-group">
+              <input
+                type="password"
+                id="youtubeKey"
+                class="form-control"
+                placeholder="Enter YouTube Data API Key"
+                aria-label="YouTube API Key"
+              />
+              <button
+                class="btn btn-outline-secondary"
+                type="button"
+                onclick="togglePasswordVisibility('youtubeKey')"
+                aria-label="Toggle YouTube Key Visibility"
+              >
+                <i class="bi bi-eye-slash" id="youtubeKeyToggleIcon"></i>
+              </button>
+            </div>
+
+            <div class="d-grid gap-2 mt-4">
+              <button
+                type="button"
+                class="btn btn-success"
+                onclick="saveAPIKeys()"
+                aria-label="Save API Keys"
+              >
+                <i class="bi bi-save"></i> Save Keys
+              </button>
+              <button
+                type="button"
+                class="btn btn-danger"
+                onclick="clearAPIKeys()"
+                aria-label="Clear API Keys"
+              >
+                <i class="bi bi-trash"></i> Clear Keys
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Search History Panel -->
+      <div
+        class="offcanvas offcanvas-end"
+        tabindex="-1"
+        id="searchHistoryPanel"
+        aria-labelledby="searchHistoryPanelLabel"
+      >
+        <div class="offcanvas-header">
+          <h5 class="offcanvas-title" id="searchHistoryPanelLabel">
+            <i class="bi bi-clock-history"></i> Search History
+          </h5>
+          <button
+            type="button"
+            class="btn-close text-reset"
+            data-bs-dismiss="offcanvas"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="offcanvas-body">
+          <ul
+            class="list-group list-group-flush history-panel"
+            id="historyList"
+          >
+            <!-- History items will be dynamically added here -->
+          </ul>
+          <button
+            class="btn btn-outline-danger w-100 mt-3"
+            onclick="clearSearchHistory()"
+            aria-label="Clear Search History"
+          >
+            <i class="bi bi-trash"></i> Clear History
+          </button>
+        </div>
+      </div>
+
+      <!-- User Profile Modal -->
+      <div
+        class="modal fade"
+        id="userProfileModal"
+        tabindex="-1"
+        aria-labelledby="userProfileModalLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="userProfileModalLabel">
+                <i class="bi bi-person-circle"></i> Your Profile
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div class="modal-body">
+              <p>
+                Customize your experience on NovaSearch. Toggle dark mode or adjust
+                personal settings below.
+              </p>
+              <!-- Example Setting -->
+              <div class="form-check form-switch">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="profileDarkMode"
+                  onclick="toggleDarkMode()"
+                />
+                <label class="form-check-label" for="profileDarkMode"
+                  >Dark Mode</label
+                >
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+                aria-label="Close Profile"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                aria-label="Save Changes"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toast Notifications -->
+      <div class="toast-container position-fixed top-0 end-0 p-3">
+        <div
+          id="toastLiveExample"
+          class="toast align-items-center text-bg-primary border-0"
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"
+        >
+          <div class="d-flex">
+            <div class="toast-body" id="toastBody">
+              Hello, world! This is a toast message.
+            </div>
+            <button
+              type="button"
+              class="btn-close btn-close-white me-2 m-auto"
+              data-bs-dismiss="toast"
+              aria-label="Close"
+            ></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dark Mode Toggle (Floating FAB) -->
+      <div class="dark-mode-toggle">
+        <div class="d-flex align-items-center">
+          <div class="form-check form-switch">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              id="darkModeSwitch"
+              onclick="toggleDarkMode()"
+              aria-label="Toggle Dark Mode"
+            />
+            <label class="form-check-label" for="darkModeSwitch">
+              <i class="bi bi-moon-stars"></i>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading Spinner -->
+      <div class="spinner-overlay" id="spinner">
+        <div
+          class="spinner-border text-primary"
+          role="status"
+          aria-label="Loading Spinner"
+        >
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS and Dependencies -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+    ></script>
+
+    <!-- Chart.js -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"
+    ></script>
+
+    <!-- Intro.js for Guided Tour -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intro.js/4.2.2/intro.min.js"></script>
+
+    <script>
+      // **Important:**
+      // Including API keys in client-side code is insecure.
+      // For production, move API calls to a secure backend.
+
+      // Pagination & Load-More variables
+      let iaPage = 1;
+      let currentIAQuery = "";
+
+      let redditAfter = null;
+      let currentRedditSubreddit = "";
+
+      // For GPT & DeepSeek, we simply re-fetch on "Load More"
+      // but you could add page counters if needed.
+      let gptPage = 1;
+      let deepSeekPage = 1;
+
+      // For Wikipedia pagination, e.g. sroffset
+      let wikiOffset = 0;
+
+      // For YouTube, e.g. nextPageToken
+      let youtubePageToken = null;
+
+      // Initialize Bootstrap Toast
+      const toastLiveExample = document.getElementById("toastLiveExample");
+      const toast = new bootstrap.Toast(toastLiveExample);
+
+      // Logging Function
+      const logMessage = (message, type = "info") => {
+        const logsDiv = document.getElementById("logs");
+        const timestamp = new Date().toLocaleTimeString();
+        logsDiv.textContent += `[${timestamp}] [${type.toUpperCase()}] ${message}\n`;
+        logsDiv.scrollTop = logsDiv.scrollHeight; // Auto-scroll to latest log
+
+        // Show toast notification
+        showToast(message, type);
+      };
+
+      // Show Toast Notification
+      const showToast = (message, type) => {
+        const toastBody = document.getElementById("toastBody");
+        toastBody.textContent = message;
+        toastLiveExample.classList.remove(
+          "text-bg-primary",
+          "text-bg-danger",
+          "text-bg-success",
+          "text-bg-warning",
+          "text-bg-info"
+        );
+        if (type === "success") {
+          toastLiveExample.classList.add("text-bg-success");
+        } else if (type === "error") {
+          toastLiveExample.classList.add("text-bg-danger");
+        } else if (type === "warning") {
+          toastLiveExample.classList.add("text-bg-warning");
+        } else {
+          toastLiveExample.classList.add("text-bg-primary");
+        }
+        toast.show();
+      };
+
+      // Show/Hide Global Loading Spinner
+      const showGlobalSpinner = () => {
+        document.getElementById("spinner").style.display = "flex";
+      };
+      const hideGlobalSpinner = () => {
+        document.getElementById("spinner").style.display = "none";
+      };
+
+      // Show/Hide Tab-specific Loading Spinner
+      const showTabSpinner = (spinnerId) => {
+        document.getElementById(spinnerId).style.display = "flex";
+      };
+      const hideTabSpinner = (spinnerId) => {
+        document.getElementById(spinnerId).style.display = "none";
+      };
+
+      // Display Error Message
+      const displayError = (errorDivId, message) => {
+        const errorDiv = document.getElementById(errorDivId);
+        errorDiv.textContent = message;
+        errorDiv.style.display = "block";
+      };
+      const hideAllErrors = () => {
+        const errorAlerts = document.querySelectorAll(".error-alert");
+        errorAlerts.forEach((alert) => (alert.style.display = "none"));
+      };
+
+      // Toggle Logs Visibility
+      const toggleLogs = () => {
+        const logsPanel = document.getElementById("logsPanel");
+        logsPanel.classList.toggle("hidden");
+      };
+
+      // Dark Mode Toggle
+      const toggleDarkMode = () => {
+        document.body.classList.toggle("dark-mode");
+        document.getElementById("spinner").classList.toggle("dark-mode");
+
+        // Sync Dark Mode toggle in user profile modal
+        const profileDarkMode = document.getElementById("profileDarkMode");
+        if (profileDarkMode) {
+          profileDarkMode.checked = document.body.classList.contains(
+            "dark-mode"
+          );
+        }
+
+        // Sync Dark Mode switch in floating FAB
+        const darkModeSwitch = document.getElementById("darkModeSwitch");
+        if (darkModeSwitch) {
+          darkModeSwitch.checked = document.body.classList.contains("dark-mode");
+        }
+
+        // Update Toggle Analytics Icon
+        const toggleAnalyticsIcon = document.getElementById("toggleAnalyticsIcon");
+        if (document.body.classList.contains("dark-mode")) {
+          toggleAnalyticsIcon.classList.remove("bi-eye");
+          toggleAnalyticsIcon.classList.add("bi-eye-slash");
+        } else {
+          toggleAnalyticsIcon.classList.remove("bi-eye-slash");
+          toggleAnalyticsIcon.classList.add("bi-eye");
+        }
+
+        // Update Chart Colors if needed
+        if (statsChart) {
+          const computedStyles = getComputedStyle(document.body);
+          statsChart.options.plugins.legend.labels.color =
+            computedStyles.getPropertyValue("--bs-body-color");
+          statsChart.options.plugins.title.color =
+            computedStyles.getPropertyValue("--bs-body-color");
+          statsChart.options.scales.x.ticks.color =
+            computedStyles.getPropertyValue("--bs-body-color");
+          statsChart.options.scales.y.ticks.color =
+            computedStyles.getPropertyValue("--bs-body-color");
+          statsChart.update();
+        }
+      };
+
+      // Debounce Search
+      let debounceTimeout;
+      async function fetchAllServicesDebounced() {
+        clearTimeout(debounceTimeout);
+        debounceTimeout = setTimeout(fetchAllServices, 300);
+      }
+
+      // Orchestrate All Fetches
+      async function fetchAllServices() {
+        const query = document.getElementById("queryInput").value.trim();
+        if (!query) {
+          logMessage("No query provided.", "error");
+          showToast("Please enter a search query.", "error");
+          return;
+        }
+
+        logMessage(`Initiating fetch for all services with query: "${query}"`);
+        showGlobalSpinner();
+        hideAllErrors();
+        clearAllResults();
+
+        // Reset "page" or "token" variables
+        gptPage = 1;
+        deepSeekPage = 1;
+        wikiOffset = 0;
+        iaPage = 1;  
+        redditAfter = null;  
+        youtubePageToken = null;  
+
+        // Hide all Load More buttons (will be shown if results are paginated)
+        document.getElementById("loadMoreGPTBtn").style.display = "none";
+        document.getElementById("loadMoreDeepSeekBtn").style.display = "none";
+        document.getElementById("loadMoreWikiBtn").style.display = "none";
+        document.getElementById("loadMoreIABtn").style.display = "none";
+        document.getElementById("loadMoreRedditBtn").style.display = "none";
+        document.getElementById("loadMoreYouTubeBtn").style.display = "none";
+
+        // Save to History
+        saveSearch(query);
+
+        try {
+          await Promise.all([
+            fetchGPTData(query),
+            fetchDeepSeekData(query),
+            fetchWikipediaData(query, 0),
+            fetchInternetArchiveData(query, 1),
+            fetchRedditData(query, 1),
+            fetchYouTubeData(query, null)
+          ]);
+          updateStatisticsChart();
+        } catch (error) {
+          logMessage(`Error fetching services: ${error.message}`, "error");
+        } finally {
+          hideGlobalSpinner();
+        }
+      }
+
+      // Clear Results
+      function clearAllResults() {
+        const tabPanels = document.querySelectorAll(".tab-pane");
+        tabPanels.forEach((panel) => {
+          const cardContainers = panel.querySelectorAll(
+            "#gptResult, #deepSeekResult, #wikiResult, #internetArchiveResult, #redditResult, #youtubeResult"
+          );
+          cardContainers.forEach((c) => (c.innerHTML = ""));
+        });
+      }
+
+      // GPT-4
+      async function fetchGPTData(query) {
+        const errorDivId = "gptError";
+        const resultDivId = "gptResult";
+        const spinnerId = "gptSpinner";
+
+        showTabSpinner(spinnerId);
+        try {
+          logMessage(`Fetching GPT-4 (page ${gptPage}) for query: "${query}"`, "info");
+          const openAIKey = getAPIKey("openAIKey");
+          if (!openAIKey)
+            throw new Error(
+              "OpenAI API Key not set. Please enter your key in the API Keys panel."
+            );
+
+          const endpoint = "https://api.openai.com/v1/chat/completions";
+          const response = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${openAIKey}`
+            },
+            body: JSON.stringify({
+              model: "gpt-4",
+              messages: [
+                {
+                  role: "system",
+                  content:
+                    "You are a knowledgeable assistant providing detailed information."
+                },
+                { role: "user", content: query + ` (page ${gptPage})` }
+              ],
+              max_tokens: 1000
+            })
+          });
+
+          if (!response.ok) {
+            throw new Error(`GPT-4 API failed with status ${response.status}`);
+          }
+
+          const data = await response.json();
+          const content =
+            data.choices[0]?.message.content.trim() ||
+            `No GPT-4 results found for page ${gptPage}.`;
+
+          // Append new results
+          document.getElementById(resultDivId).innerHTML += `<pre>${content}</pre>`;
+          logMessage(`GPT-4 page ${gptPage} data fetched successfully.`, "success");
+
+          // Show Load More button (you can hide it if it doesn't make sense)
+          document.getElementById("loadMoreGPTBtn").style.display = "inline-block";
+        } catch (error) {
+          displayError(errorDivId, error.message);
+          logMessage(`GPT-4 error: ${error.message}`, "error");
+        } finally {
+          hideTabSpinner(spinnerId);
+        }
+      }
+      async function loadMoreGPT() {
+        gptPage++;
+        const query = document.getElementById("queryInput").value.trim();
+        if (!query) return;
+        await fetchGPTData(query);
+      }
+
+      // DeepSeek
+      async function fetchDeepSeekData(query) {
+        const errorDivId = "deepSeekError";
+        const resultDivId = "deepSeekResult";
+        const spinnerId = "deepSeekSpinner";
+
+        showTabSpinner(spinnerId);
+        try {
+          logMessage(`Fetching DeepSeek (page ${deepSeekPage}) for query: "${query}"`, "info");
+          const deepSeekKey = getAPIKey("deepSeekKey");
+          if (!deepSeekKey)
+            throw new Error(
+              "DeepSeek API Key not set. Please enter your key in the API Keys panel."
+            );
+
+          const endpoint = "https://api.deepseek.com/chat/completions";
+          const response = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${deepSeekKey}`
+            },
+            body: JSON.stringify({
+              model: "deepseek-chat",
+              messages: [
+                { role: "system", content: "You are a helpful assistant." },
+                { role: "user", content: query + ` (page ${deepSeekPage})` }
+              ],
+              stream: false
+            })
+          });
+
+          if (!response.ok) {
+            throw new Error(`DeepSeek API failed with status ${response.status}`);
+          }
+
+          const data = await response.json();
+          const content =
+            data.choices[0]?.message.content.trim() ||
+            `No DeepSeek results found for page ${deepSeekPage}.`;
+
+          document.getElementById(resultDivId).innerHTML += `<pre>${content}</pre>`;
+          logMessage(`DeepSeek page ${deepSeekPage} data fetched successfully.`, "success");
+
+          // Show Load More button
+          document.getElementById("loadMoreDeepSeekBtn").style.display = "inline-block";
+        } catch (error) {
+          displayError(errorDivId, error.message);
+          logMessage(`DeepSeek error: ${error.message}`, "error");
+        } finally {
+          hideTabSpinner(spinnerId);
+        }
+      }
+      async function loadMoreDeepSeek() {
+        deepSeekPage++;
+        const query = document.getElementById("queryInput").value.trim();
+        if (!query) return;
+        await fetchDeepSeekData(query);
+      }
+
+      // Wikipedia
+      async function fetchWikipediaData(query, offset = 0) {
+        const errorDivId = "wikiError";
+        const resultDivId = "wikiResult";
+        const spinnerId = "wikiSpinner";
+
+        showTabSpinner(spinnerId);
+        try {
+          logMessage(`Fetching Wikipedia offset ${offset} for query: "${query}"`, "info");
+          const endpoint = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(
+            query
+          )}&sroffset=${offset}&format=json&origin=*`;
+          const response = await fetch(endpoint);
+
+          if (!response.ok) {
+            throw new Error(`Wikipedia API failed with status ${response.status}`);
+          }
+
+          const data = await response.json();
+          if (data.query?.search?.length > 0) {
+            const results = data.query.search.map((item) => ({
+              title: item.title,
+              snippet: item.snippet.replace(/<\/?[^>]+(>|$)/g, ""), // Remove HTML tags
+              url: `https://en.wikipedia.org/wiki/${encodeURIComponent(item.title)}`
+            }));
+
+            document.getElementById(resultDivId).innerHTML += renderWikipediaCards(
+              results
+            );
+            logMessage(`Wikipedia offset ${offset} fetched successfully.`, "success");
+
+            // Show Load More if we still expect more results
+            if (results.length === 10) {
+              document.getElementById("loadMoreWikiBtn").style.display = "inline-block";
+            }
+          } else {
+            throw new Error("No results from Wikipedia.");
+          }
+        } catch (error) {
+          displayError(errorDivId, error.message);
+          logMessage(`Wikipedia error: ${error.message}`, "error");
+        } finally {
+          hideTabSpinner(spinnerId);
+        }
+      }
+      function renderWikipediaCards(results) {
+        return results
+          .map(
+            (result) => `
+              <div class="result-card">
+                <h5>${result.title}</h5>
+                <p>${result.snippet}</p>
+                <a href="${result.url}" target="_blank" class="btn btn-primary btn-sm">
+                  <i class="bi bi-box-arrow-up-right"></i> Read More
+                </a>
+              </div>
+            `
+          )
+          .join("");
+      }
+      async function loadMoreWiki() {
+        wikiOffset += 10;
+        const query = document.getElementById("queryInput").value.trim();
+        if (!query) return;
+        await fetchWikipediaData(query, wikiOffset);
+      }
+
+      // Internet Archive
+      async function fetchInternetArchiveData(query, page = 1) {
+        const errorDivId = "internetArchiveError";
+        const resultDivId = "internetArchiveResult";
+        const spinnerId = "internetArchiveSpinner";
+        const loadMoreBtn = document.getElementById("loadMoreIABtn");
+
+        showTabSpinner(spinnerId);
+        try {
+          logMessage(
+            `Fetching Internet Archive data for query: "${query}" on page ${page}`,
+            "info"
+          );
+          const endpoint = `https://archive.org/advancedsearch.php?q=${encodeURIComponent(
+            query
+          )}&fl[]=identifier,title,creator,description&rows=10&page=${page}&output=json`;
+          const response = await fetch(endpoint);
+
+          if (!response.ok) {
+            throw new Error(
+              `Internet Archive API failed with status ${response.status}`
+            );
+          }
+
+          const data = await response.json();
+          const results = data.response.docs;
+          if (results.length > 0) {
+            document.getElementById(resultDivId).innerHTML +=
+              renderInternetArchiveResults(results);
+            logMessage(
+              `Internet Archive page ${page} data fetched successfully.`,
+              "success"
+            );
+
+            // Show or hide Load More button
+            if (results.length === 10) {
+              loadMoreBtn.style.display = "inline-block";
+            } else {
+              loadMoreBtn.style.display = "none";
+            }
+
+            currentIAQuery = query;
+            iaPage = page;
+          } else {
+            if (page === 1) {
+              throw new Error("No results found in Internet Archive.");
+            } else {
+              logMessage("No more results found in Internet Archive.", "warning");
+              loadMoreBtn.style.display = "none";
+            }
+          }
+        } catch (error) {
+          displayError(errorDivId, error.message);
+          logMessage(`Internet Archive error: ${error.message}`, "error");
+        } finally {
+          hideTabSpinner(spinnerId);
+        }
+      }
+      function renderInternetArchiveResults(results) {
+        return results
+          .map(
+            (item) => `
+            <div class="result-card">
+              <h5>${item.title || "No Title"}</h5>
+              <p><strong>Creator:</strong> ${item.creator || "N/A"}</p>
+              <p>${item.description || "No Description"}</p>
+              <a href="https://archive.org/details/${item.identifier}" target="_blank" class="btn btn-primary btn-sm">
+                <i class="bi bi-box-arrow-up-right"></i> View Item
+              </a>
+            </div>
+          `
+          )
+          .join("");
+      }
+      async function loadMoreInternetArchive() {
+        const nextPage = iaPage + 1;
+        if (!currentIAQuery) return;
+
+        logMessage(
+          `Loading more Internet Archive data for "${currentIAQuery}" on page ${nextPage}`,
+          "info"
+        );
+        await fetchInternetArchiveData(currentIAQuery, nextPage);
+      }
+
+      // Reddit
+      async function fetchRedditData(subreddit, page = 1) {
+        const errorDivId = "redditError";
+        const resultDivId = "redditResult";
+        const spinnerId = "redditSpinner";
+        const loadMoreBtn = document.getElementById("loadMoreRedditBtn");
+
+        showTabSpinner(spinnerId);
+        try {
+          logMessage(
+            `Fetching Reddit data for subreddit: "${subreddit}" (page ${page})`,
+            "info"
+          );
+          const limit = 10;
+          let endpoint = `https://www.reddit.com/r/${encodeURIComponent(
+            subreddit
+          )}/hot.json?limit=${limit}`;
+          if (redditAfter) {
+            endpoint += `&after=${redditAfter}`;
+          }
+
+          const response = await fetch(endpoint);
+          if (!response.ok) {
+            throw new Error(`Reddit API failed with status ${response.status}`);
+          }
+
+          const data = await response.json();
+          const posts = data.data.children.map((child) => child.data);
+          if (posts.length > 0) {
+            document.getElementById(resultDivId).innerHTML += renderRedditPosts(
+              posts
+            );
+            logMessage(`Reddit data page ${page} fetched successfully.`, "success");
+
+            redditAfter = data.data.after;
+            // Show or hide Load More button
+            if (redditAfter) {
+              loadMoreBtn.style.display = "inline-block";
+            } else {
+              loadMoreBtn.style.display = "none";
+            }
+
+            currentRedditSubreddit = subreddit;
+          } else {
+            if (page === 1) {
+              throw new Error(`No posts found in subreddit "${subreddit}".`);
+            } else {
+              logMessage("No more posts found in this subreddit.", "warning");
+              loadMoreBtn.style.display = "none";
+            }
+          }
+        } catch (error) {
+          displayError(errorDivId, error.message);
+          logMessage(`Reddit error: ${error.message}`, "error");
+        } finally {
+          hideTabSpinner(spinnerId);
+        }
+      }
+      function renderRedditPosts(posts) {
+        return posts
+          .map(
+            (post) => `
+            <div class="result-card">
+              <h5>
+                <a href="https://reddit.com${post.permalink}" target="_blank">${post.title}</a>
+              </h5>
+              <p><strong>Author:</strong> ${post.author}</p>
+              <p><strong>Subreddit:</strong> r/${post.subreddit}</p>
+              <p><strong>Score:</strong> ${post.score} | <strong>Comments:</strong> ${
+              post.num_comments
+            }</p>
+              ${
+                post.selftext
+                  ? `<p>${truncateText(post.selftext, 200)}</p>`
+                  : ""
+              }
+              <a href="https://reddit.com${post.permalink}" target="_blank" class="btn btn-primary btn-sm">
+                <i class="bi bi-box-arrow-up-right"></i> View Post
+              </a>
+              ${
+                post.url && /\.(jpg|png|gif)$/.test(post.url)
+                  ? `<a href="${post.url}" target="_blank" class="btn btn-secondary btn-sm">
+                      <i class="bi bi-image"></i> View Image
+                    </a>`
+                  : ""
+              }
+            </div>
+          `
+          )
+          .join("");
+      }
+      async function loadMoreReddit() {
+        if (!currentRedditSubreddit) return;
+        const page = 2; // or track your own page variable
+        logMessage(`Loading more Reddit posts for "${currentRedditSubreddit}"`, "info");
+        await fetchRedditData(currentRedditSubreddit, page);
+      }
+      function truncateText(text, maxLength) {
+        if (text.length <= maxLength) return text;
+        return text.substring(0, maxLength) + "...";
+      }
+
+      // YouTube
+      async function fetchYouTubeData(query, pageToken) {
+        const errorDivId = "youtubeError";
+        const resultDivId = "youtubeResult";
+        const spinnerId = "youtubeSpinner";
+        const loadMoreBtn = document.getElementById("loadMoreYouTubeBtn");
+
+        showTabSpinner(spinnerId);
+        try {
+          logMessage(
+            `Fetching YouTube data for query: "${query}" pageToken: ${
+              pageToken || "none"
+            }`,
+            "info"
+          );
+          const youtubeKey = getAPIKey("youtubeKey");
+          if (!youtubeKey)
+            throw new Error(
+              "YouTube Data API Key not set. Please enter your key in the API Keys panel."
+            );
+
+          const maxResults = 5;
+          let endpoint = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=${maxResults}&q=${encodeURIComponent(
+            query
+          )}&key=${youtubeKey}`;
+          if (pageToken) {
+            endpoint += `&pageToken=${pageToken}`;
+          }
+
+          const response = await fetch(endpoint);
+          if (!response.ok) {
+            throw new Error(`YouTube API failed with status ${response.status}`);
+          }
+
+          const data = await response.json();
+          if (data.items?.length > 0) {
+            document.getElementById(resultDivId).innerHTML += renderYouTubeResults(
+              data.items
+            );
+            logMessage("YouTube data fetched successfully.", "success");
+
+            // Update nextPageToken
+            youtubePageToken = data.nextPageToken || null;
+            if (youtubePageToken) {
+              loadMoreBtn.style.display = "inline-block";
+            } else {
+              loadMoreBtn.style.display = "none";
+            }
+          } else {
+            throw new Error("No results found on YouTube.");
+          }
+        } catch (error) {
+          displayError(errorDivId, error.message);
+          logMessage(`YouTube error: ${error.message}`, "error");
+        } finally {
+          hideTabSpinner(spinnerId);
+        }
+      }
+      function renderYouTubeResults(items) {
+        return items
+          .map((item) => {
+            const videoId = item.id.videoId;
+            const title = item.snippet.title;
+            const description = item.snippet.description || "No description available.";
+            const channelTitle = item.snippet.channelTitle;
+            const thumbnailUrl = item.snippet.thumbnails?.medium?.url || "";
+            const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+
+            return `
+              <div class="result-card">
+                <h5>${title}</h5>
+                <p><strong>Channel:</strong> ${channelTitle}</p>
+                ${
+                  thumbnailUrl
+                    ? `<img src="${thumbnailUrl}" alt="Video Thumbnail" class="img-fluid mb-3" style="max-width:300px;">`
+                    : ""
+                }
+                <p>${description}</p>
+                <a href="${videoUrl}" target="_blank" class="btn btn-primary btn-sm">
+                  <i class="bi bi-box-arrow-up-right"></i> Watch Video
+                </a>
+              </div>
+            `;
+          })
+          .join("");
+      }
+      async function loadMoreYouTube() {
+        const query = document.getElementById("queryInput").value.trim();
+        if (!query || !youtubePageToken) return;
+        await fetchYouTubeData(query, youtubePageToken);
+      }
+
+      // API Keys
+      function saveAPIKeys() {
+        const openAIKey = document.getElementById("openAIKey").value.trim();
+        const deepSeekKey = document.getElementById("deepSeekKey").value.trim();
+        const youtubeKey = document.getElementById("youtubeKey").value.trim();
+
+        if (openAIKey) {
+          localStorage.setItem("openAIKey", openAIKey);
+          logMessage("OpenAI API Key saved successfully.", "success");
+        }
+        if (deepSeekKey) {
+          localStorage.setItem("deepSeekKey", deepSeekKey);
+          logMessage("DeepSeek API Key saved successfully.", "success");
+        }
+        if (youtubeKey) {
+          localStorage.setItem("youtubeKey", youtubeKey);
+          logMessage("YouTube API Key saved successfully.", "success");
+        }
+        showToast("API Keys saved successfully.", "success");
+      }
+      function clearAPIKeys() {
+        localStorage.removeItem("openAIKey");
+        localStorage.removeItem("deepSeekKey");
+        localStorage.removeItem("youtubeKey");
+        document.getElementById("apiKeysForm").reset();
+        logMessage("API Keys cleared successfully.", "success");
+        showToast("API Keys cleared successfully.", "success");
+      }
+      function getAPIKey(keyName) {
+        return localStorage.getItem(keyName);
+      }
+      function togglePasswordVisibility(fieldId) {
+        const field = document.getElementById(fieldId);
+        const toggleIcon = document.getElementById(`${fieldId}ToggleIcon`);
+        if (field.type === "password") {
+          field.type = "text";
+          toggleIcon.classList.remove("bi-eye-slash");
+          toggleIcon.classList.add("bi-eye");
+        } else {
+          field.type = "password";
+          toggleIcon.classList.remove("bi-eye");
+          toggleIcon.classList.add("bi-eye-slash");
+        }
+      }
+
+      // Search History & Statistics
+      function saveSearch(query) {
+        let searchHistory = JSON.parse(localStorage.getItem("searchHistory")) || [];
+        const timestamp = new Date().toISOString();
+        searchHistory.push({ keyword: query, timestamp });
+        localStorage.setItem("searchHistory", JSON.stringify(searchHistory));
+        logMessage(`Search "${query}" saved to history.`, "info");
+        updateHistoryList();
+      }
+      function getSearchHistory() {
+        return JSON.parse(localStorage.getItem("searchHistory")) || [];
+      }
+      function updateHistoryList() {
+        const historyList = document.getElementById("historyList");
+        const history = getSearchHistory();
+        historyList.innerHTML = history
+          .map(
+            (h) => `
+            <li class="list-group-item">
+              <button onclick="loadSearchFromHistory('${h.keyword.replace(
+                /'/g,
+                "\\'"
+              )}')">${h.keyword}</button>
+            </li>
+          `
+          )
+          .join("");
+      }
+      function loadSearchFromHistory(query) {
+        document.getElementById("queryInput").value = query;
+        fetchAllServicesDebounced();
+      }
+      function clearSearchHistory() {
+        localStorage.removeItem("searchHistory");
+        updateHistoryList();
+        logMessage("Search history cleared.", "success");
+        showToast("Search history cleared.", "success");
+      }
+
+      // Statistics
+      function generateStatisticsData() {
+        const searchHistory = getSearchHistory();
+        const searchesPerMonth = {};
+        const keywordFrequency = {};
+
+        searchHistory.forEach((entry) => {
+          const date = new Date(entry.timestamp);
+          const month = date.toLocaleString("default", {
+            month: "short",
+            year: "numeric"
+          });
+          if (searchesPerMonth[month]) {
+            searchesPerMonth[month]++;
+          } else {
+            searchesPerMonth[month] = 1;
+          }
+          // Keyword frequency
+          const keywords = entry.keyword.toLowerCase().split(" ");
+          keywords.forEach((word) => {
+            if (keywordFrequency[word]) {
+              keywordFrequency[word]++;
+            } else {
+              keywordFrequency[word] = 1;
+            }
+          });
+        });
+
+        // Sort months
+        const sortedMonths = Object.keys(searchesPerMonth).sort((a, b) => {
+          const dateA = new Date(a);
+          const dateB = new Date(b);
+          return dateA - dateB;
+        });
+        // Top 5 keywords
+        const topKeywords = Object.entries(keywordFrequency)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 5)
+          .map((entry) => ({ keyword: entry[0], count: entry[1] }));
+
+        const labels = sortedMonths;
+        const data = sortedMonths.map((month) => searchesPerMonth[month]);
+        return { labels, data, topKeywords };
+      }
+
+      let statsChart;
+      function initializeStatisticsChart() {
+        const ctx = document.getElementById("statsChart").getContext("2d");
+        const statsData = generateStatisticsData();
+
+        statsChart = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: statsData.labels,
+            datasets: [
+              {
+                label: "Searches Per Month",
+                data: statsData.data,
+                backgroundColor: "rgba(59, 130, 246, 0.4)",
+                borderColor: "rgba(59, 130, 246, 1)",
+                borderWidth: 1
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: "top",
+                labels: {
+                  color: getComputedStyle(document.body).getPropertyValue(
+                    "--bs-body-color"
+                  )
+                }
+              },
+              title: {
+                display: true,
+                text: "Monthly Search Statistics",
+                color: getComputedStyle(document.body).getPropertyValue(
+                  "--bs-body-color"
+                )
+              }
+            },
+            scales: {
+              x: {
+                ticks: {
+                  color: getComputedStyle(document.body).getPropertyValue(
+                    "--bs-body-color"
+                  )
+                },
+                grid: {
+                  color: "rgba(0,0,0,0.1)"
+                }
+              },
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  color: getComputedStyle(document.body).getPropertyValue(
+                    "--bs-body-color"
+                  )
+                },
+                grid: {
+                  color: "rgba(0,0,0,0.1)"
+                }
+              }
+            }
+          }
+        });
+      }
+      function updateStatisticsChart() {
+        if (statsChart) {
+          const statsData = generateStatisticsData();
+          statsChart.data.labels = statsData.labels;
+          statsChart.data.datasets[0].data = statsData.data;
+          statsChart.update();
+          logMessage("Statistics chart updated.", "success");
+        }
+      }
+
+      // Toggle Analytics
+      function toggleAnalyticsVisibility() {
+        const analyticsSection = document.getElementById("analytics");
+        analyticsSection.classList.toggle("d-none");
+        const toggleItem = document.getElementById("toggleAnalyticsIcon");
+        if (analyticsSection.classList.contains("d-none")) {
+          toggleItem.classList.remove("bi-eye");
+          toggleItem.classList.add("bi-eye-slash");
+          logMessage("Analytics panel hidden.", "info");
+        } else {
+          toggleItem.classList.remove("bi-eye-slash");
+          toggleItem.classList.add("bi-eye");
+          logMessage("Analytics panel shown.", "info");
+        }
+      }
+
+      // Navigation
+      function navigateTo(section) {
+        if (section === "analytics") {
+          window.scrollTo({
+            top: document.getElementById("analytics").offsetTop - 100,
+            behavior: "smooth"
+          });
+        } else if (section === "home") {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+        // Additional navigation logic...
+      }
+
+      // Initialization
+      window.onload = () => {
+        // Load Keys
+        const openAIKey = getAPIKey("openAIKey");
+        const deepSeekKey = getAPIKey("deepSeekKey");
+        const youtubeKey = getAPIKey("youtubeKey");
+
+        if (openAIKey) {
+          document.getElementById("openAIKey").value = openAIKey;
+        }
+        if (deepSeekKey) {
+          document.getElementById("deepSeekKey").value = deepSeekKey;
+        }
+        if (youtubeKey) {
+          document.getElementById("youtubeKey").value = youtubeKey;
+        }
+
+        // Dark Mode from System Preferences
+        if (
+          window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches
+        ) {
+          document.getElementById("darkModeSwitch").checked = true;
+          toggleDarkMode();
+        }
+
+        // Intro.js Tour
+        const intro = introJs();
+        intro.setOptions({
+          steps: [
+            {
+              intro:
+                "Welcome to NovaSearch! Let’s take a quick tour of the dashboard."
+            },
+            {
+              element: document.querySelector(".hero-section"),
+              intro: "This is your hero section, with a quick overview of NovaSearch."
+            },
+            {
+              element: document.querySelector(".search-card"),
+              intro:
+                "Type your query here to fetch results from multiple sources at once."
+            },
+            {
+              element: document.querySelector('[aria-label="Manage API Keys"]'),
+              intro: "Manage all your sensitive API credentials in this panel."
+            },
+            {
+              element: document.querySelector('[aria-label="Open Search History"]'),
+              intro: "Access your search history to quickly revisit past queries."
+            },
+            {
+              element: document.querySelector(".nav-tabs"),
+              intro: "Browse results from GPT-4, DeepSeek, Wikipedia, etc."
+            },
+            {
+              element: document.querySelector("#analytics"),
+              intro:
+                "Track your usage and search analytics in this Insights panel."
+            }
+          ],
+          showStepNumbers: true,
+          showBullets: false,
+          exitOnOverlayClick: false,
+          showProgress: true
+        });
+        intro.start();
+
+        // Bootstrap Tooltips
+        var tooltipTriggerList = [].slice.call(
+          document.querySelectorAll('[data-bs-toggle="tooltip"]')
+        );
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+          return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
+        // Initialize Chart
+        initializeStatisticsChart();
+
+        // Load Search History
+        updateHistoryList();
+      };
+    </script>
+  </body>
+</html>
