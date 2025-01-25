@@ -15,7 +15,7 @@ input_ids = tokenizer.encode(prompt, return_tensors="pt")
 # Gera texto
 output_sequences = model.generate(
     input_ids=input_ids,
-    max_length=50,
+    max_length=300,
     temperature=0.7,
     top_k=50,
     top_p=0.9,
