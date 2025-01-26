@@ -1,10 +1,14 @@
 from flask import Flask, request, render_template_string
-from transformers import MarianMTModel, MarianTokenizer
-import sentencepiece  # Required dependency
+from transformers import M2M100ForConditionalGeneration, M2M100Tokenizer
+from langdetect import detect, LangDetectException
+import sentencepiece  # Needed by M2M100 for tokenization
+from gtts import gTTS
+import os
+import uuid
 
 app = Flask(__name__)
 
-# Supported languages and their model codes
+# Map language names to M2M100 language codes
 LANGUAGES = {
     'English': 'en',
     'French': 'fr',
@@ -18,51 +22,10 @@ LANGUAGES = {
     'Arabic': 'ar'
 }
 
-# Load the multilingual model
-model_name = "Helsinki-NLP/opus-mt-mul-en"
-tokenizer = MarianTokenizer.from_pretrained(model_name)
-model = MarianMTModel.from_pretrained(model_name)
-
-def format_translation_text(text, src_lang, tgt_lang):
-    """Format text for translation using the MarianMT model"""
-    if src_lang == 'auto':
-        # For auto-detection, we'll just prepend the target language code
-        return f">{tgt_lang}< {text}"
-    else:
-        return f">{src_lang}< {text}"
-
-@app.route('/', methods=['GET', 'POST'])
-def home():
-    translation = ""
-    error = ""
-    source_lang = 'auto'
-    target_lang = 'en'
-    input_text = ""
-
-    if request.method == 'POST':
-        input_text = request.form.get('text', '')
-        source_lang = request.form.get('source_lang', 'auto')
-        target_lang = request.form.get('target_lang', 'pt')
-
-        if input_text.strip():
-            try:
-                # Format text for translation
-                formatted_text = format_translation_text(input_text, source_lang, target_lang)
-                
-                # Tokenize and translate
-                inputs = tokenizer([formatted_text], return_tensors="pt", truncation=True)
-                outputs = model.generate(**inputs)
-                translation = tokenizer.decode(outputs[0], skip_special_tokens=True)
-            except Exception as e:
-                error = f"Translation error: {str(e)}"
-
-    return render_template_string(HTML, 
-        translation=translation,
-        error=error,
-        languages=LANGUAGES,
-        source_lang=source_lang,
-        target_lang=target_lang,
-        input_text=input_text)
+# Load the M2M100 model & tokenizer
+model_name = "facebook/m2m100_418M"
+tokenizer = M2M100Tokenizer.from_pretrained(model_name)
+model = M2M100ForConditionalGeneration.from_pretrained(model_name)
 
 HTML = """
 <!DOCTYPE html>
@@ -219,6 +182,12 @@ HTML = """
             border-radius: 10px;
             background: rgba(255,0,127,0.1);
         }
+
+        audio {
+            margin-top: 1rem;
+            width: 100%;
+            outline: none;
+        }
     </style>
 </head>
 <body>
@@ -251,6 +220,14 @@ HTML = """
                 {% if translation %}
                 <div class="result-box">
                     <div class="result-text">{{ translation }}</div>
+
+                    {% if mp3_url %}
+                        <!-- Audio player for TTS -->
+                        <audio controls>
+                            <source src="{{ mp3_url }}" type="audio/mpeg">
+                            Your browser does not support the audio element.
+                        </audio>
+                    {% endif %}
                 </div>
                 {% endif %}
 
@@ -278,5 +255,78 @@ HTML = """
 </html>
 """
 
+@app.route('/', methods=['GET', 'POST'])
+def home():
+    translation = ""
+    error = ""
+    source_lang = 'auto'
+    target_lang = 'en'
+    input_text = ""
+    mp3_url = None  # Will hold the path to the generated TTS file
+
+    if request.method == 'POST':
+        input_text = request.form.get('text', '')
+        source_lang = request.form.get('source_lang', 'auto')
+        target_lang = request.form.get('target_lang', 'en')
+
+        if input_text.strip():
+            try:
+                # If user chose "Detect Language", we actually detect
+                if source_lang == 'auto':
+                    try:
+                        detected = detect(input_text)
+                        # Check if detected language is in our LANGUAGES codes
+                        if detected not in LANGUAGES.values():
+                            raise ValueError(f"Detected language '{detected}' not supported.")
+                        source_lang = detected
+                    except LangDetectException:
+                        error = "Could not detect the language. Please select manually."
+                        source_lang = 'auto'  # keep it
+
+                # Proceed if no detection error
+                if not error:
+                    # Tell the tokenizer what the source language is
+                    tokenizer.src_lang = source_lang
+
+                    # Encode the text, then force the target language in generation
+                    encoded = tokenizer(input_text, return_tensors="pt")
+                    generated_tokens = model.generate(
+                        **encoded,
+                        forced_bos_token_id=tokenizer.get_lang_id(target_lang)
+                    )
+                    translation = tokenizer.decode(generated_tokens[0], skip_special_tokens=True)
+
+                    # ========== ADD TTS HERE ==========
+                    # If we have a non-empty translation, generate TTS
+                    if translation.strip():
+                        from gtts import gTTS
+
+                        tts = gTTS(text=translation, lang=target_lang)
+                        # Generate a unique filename to avoid overwriting
+                        filename = f"tts_{uuid.uuid4().hex}.mp3"
+                        filepath = os.path.join("static", filename)
+
+                        # Save the MP3 into ./static
+                        tts.save(filepath)
+                        # We'll pass this path to our template
+                        mp3_url = f"/static/{filename}"
+
+            except Exception as e:
+                error = f"Translation error: {str(e)}"
+
+    return render_template_string(
+        HTML,
+        translation=translation,
+        error=error,
+        languages=LANGUAGES,
+        source_lang=source_lang,
+        target_lang=target_lang,
+        input_text=input_text,
+        mp3_url=mp3_url
+    )
+
 if __name__ == '__main__':
+    # Make sure there's a 'static' folder to save the MP3 files
+    if not os.path.exists("static"):
+        os.makedirs("static")
     app.run(debug=True)
