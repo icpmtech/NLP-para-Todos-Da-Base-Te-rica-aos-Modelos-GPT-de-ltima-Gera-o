@@ -34,7 +34,7 @@ def home():
     if request.method == 'POST':
         input_text = request.form.get('text', '')
         source_lang = request.form.get('source_lang', 'auto')
-        target_lang = request.form.get('target_lang', 'pt')
+        target_lang = request.form.get('target_lang', 'en')
 
         if input_text.strip():
             try:
