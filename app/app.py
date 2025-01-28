@@ -1,5 +1,6 @@
-from flask import Flask, request, redirect, render_template, url_for,jsonify
-from transformers import M2M100ForConditionalGeneration, M2M100Tokenizer,AutoTokenizer, AutoModelForCausalLM
+from flask import Flask, request, redirect, render_template, url_for, jsonify
+from transformers import M2M100ForConditionalGeneration, M2M100Tokenizer
+from transformers import pipeline   # <-- For DeepSeek pipeline
 from langdetect import detect, LangDetectException
 import sentencepiece  # Needed by M2M100 for tokenization
 from gtts import gTTS
@@ -22,7 +23,7 @@ LANGUAGES = {
     'Arabic': 'ar'
 }
 
-# Load the M2M100 model & tokenizer
+# Load the M2M100 model & tokenizer for translation
 model_name = "facebook/m2m100_418M"
 tokenizer = M2M100Tokenizer.from_pretrained(model_name)
 model = M2M100ForConditionalGeneration.from_pretrained(model_name)
@@ -88,16 +89,25 @@ def home():
         mp3_url=mp3_url
     )
 
-# Load a GPT-style model from Hugging Face
-MODEL_NAME = "facebook/opt-1.3b"  # Or any other causal LM on Hugging Face
-tokenizer_gpt = AutoTokenizer.from_pretrained(MODEL_NAME)
-model_gpt =  AutoModelForCausalLM.from_pretrained("deepseek-ai/DeepSeek-R1", trust_remote_code=True)
+##################################################################
+#            CHAT ENDPOINT (Using DeepSeek Pipeline)            #
+##################################################################
 
-# We'll keep a very simple global in-memory conversation store (for demonstration):
+# 1) Initialize the pipeline
+deepseek_pipe = pipeline(
+    "text-generation", 
+    model="deepseek-ai/DeepSeek-R1", 
+    trust_remote_code=True
+)
+
+# We'll keep a very simple global in-memory conversation store
 conversation_history = []
 
 @app.route('/chat', methods=['GET', 'POST'])
 def chat():
+    """
+    A simple chat endpoint using deepseek-ai/DeepSeek-R1 via pipeline.
+    """
     global conversation_history
     error = None
 
@@ -106,93 +116,60 @@ def chat():
         if not user_prompt:
             error = "Please enter a prompt."
         else:
-            # 1) Add user's prompt to conversation
+            # 1) Add user's message to conversation
             conversation_history.append({"role": "user", "content": user_prompt})
 
-            # 2) Prepare input for GPT
-            # A simple approach: join all messages into a single string, 
-            # but for real multi-turn chat, you’d want a more robust approach
-            full_context = ""
-            for msg in conversation_history:
-                if msg["role"] == "user":
-                    full_context += f"User: {msg['content']}\n"
-                else:  # assistant
-                    full_context += f"AI: {msg['content']}\n"
-            full_context += "AI: "
+            # 2) Prepare messages for the pipeline
+            #    The pipeline can accept a list of messages if the model supports it
+            #    (deepseek-ai/DeepSeek-R1 does support passing messages with roles).
+            #    If it only supports raw text, you'll need to convert them into a single string.
+            
+            # We'll attempt the "messages" format (as shown in the snippet):
+            # messages = [
+            #   {"role": "user", "content": "Who are you?"}
+            # ]
+            # Here, we simply pass in the entire conversation to let the model see the context:
+            output = deepseek_pipe(conversation_history)
 
-            # 3) Generate the model output
-            inputs = tokenizer_gpt.encode(full_context, return_tensors='pt')
-            # Adjust max_length, temperature, top_k, etc. as needed
-            outputs = model_gpt.generate(
-                inputs, 
-                max_length=len(inputs[0]) + 50, 
-                num_return_sequences=1,
-                do_sample=True,  # For creative generation
-                temperature=0.9,
-                top_p=0.9,
-                pad_token_id=tokenizer_gpt.eos_token_id
-            )
-            # Decode and extract the new text the model appended
-            generated_text = tokenizer_gpt.decode(outputs[0], skip_special_tokens=True)
-
-            # We only want the new portion after "AI: "
-            # A simplistic approach:
-            answer = generated_text.split("AI:")[-1].strip()
+            # 3) The pipeline returns a list. The usual key is 'generated_text'
+            if isinstance(output, list) and len(output) > 0:
+                model_reply = output[0].get('generated_text', '').strip()
+            else:
+                model_reply = "No response."
 
             # 4) Add the model's response to the conversation
-            conversation_history.append({"role": "assistant", "content": answer})
+            conversation_history.append({"role": "assistant", "content": model_reply})
 
             return redirect(url_for('chat'))
 
     # Render the chat template with existing conversation
     return render_template("tikgpt.html", conversation=conversation_history, error=error)
 
+##################################################################
+#       OPTIONAL: An API endpoint if you still want one         #
+##################################################################
+
 @app.route('/api-chat', methods=['POST'])
 def chatapi():
     """
-    Endpoint that generates text using GPT-2.
+    Endpoint that generates text using the pipeline for JSON requests.
     Expects a JSON body: {"prompt": "..."}
-    Returns JSON: {"response": "... GPT-2 output ..."}
+    Returns JSON: {"response": "... model output ..."}
     """
     data = request.get_json()
     prompt = data.get('prompt', '').strip()
 
-    # 1) Validate input
     if not prompt:
         return jsonify({"error": "No prompt provided"}), 400
 
-    # 2) Encode the prompt
-    input_ids = tokenizer_gpt.encode(prompt, return_tensors='pt')
-    
-    # If you're using GPU, move the input to CUDA:
-    # input_ids = input_ids.to("cuda")
+    # We could just call the pipeline with the prompt:
+    messages = [{"role": "user", "content": prompt}]
+    output = deepseek_pipe(messages)
+    if isinstance(output, list) and len(output) > 0:
+        ai_reply = output[0].get('generated_text', '').strip()
+    else:
+        ai_reply = "No response."
 
-    # 3) Generate text
-    # Adjust parameters as desired:
-    # - max_length: total tokens for input + output
-    # - temperature: how "creative" the model is
-    # - top_p, top_k, etc. for nucleus or top-k sampling
-    output_ids = model_gpt.generate(
-        input_ids,
-        max_length=len(input_ids[0]) + 50,  # e.g. prompt length + 50 tokens
-        num_return_sequences=1,
-        do_sample=True,      # for sampling (creative) 
-        top_p=0.9,           # nucleus sampling
-        temperature=0.9,     # creativity
-        # top_k=50,          # if you want top-k
-        pad_token_id=tokenizer_gpt.eos_token_id  # avoid errors with GPT-2
-    )
-
-    # 4) Decode the generated tokens
-    generated_text = tokenizer_gpt.decode(output_ids[0], skip_special_tokens=True)
-
-    # (Optional) If you want to remove the original prompt part from the response,
-    # you can do something like:
-    # ai_reply = generated_text[len(prompt):].strip()
-
-    ai_reply = generated_text  # The full prompt + continuation
-
-    # 5) Return the AI’s response in JSON
     return jsonify({"response": ai_reply})
 
 

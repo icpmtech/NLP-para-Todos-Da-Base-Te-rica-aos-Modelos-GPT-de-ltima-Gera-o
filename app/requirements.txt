@@ -1,8 +1,9 @@
 Flask==2.2.2
 Werkzeug==2.2.2
-torch==2.0.1
+torch
 transformers==4.28.1
 langdetect==1.0.9
 sentencepiece==0.1.99
 gTTS==2.2.4
 gunicorn==23.0.0
+flash_attn
